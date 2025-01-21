@@ -40,14 +40,14 @@ jobs:
         run: |
           echo "$PEM_FILE" > cryptoKP.pem
           chmod 400 cryptoKP.pem
-          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $USER@$HOST "sudo mkdir -p /home/ec2-user/app && sudo chown -R $USER:$USER /home/ec2-user/app"
+          ssh -o StrictHostKeyChecking=no -i cryptoKP.pem $USER@$HOST "sudo mkdir -p /home/ec2-user/app && sudo chown -R $USER:$USER /home/ec2-user/app"
           
           scp -o StrictHostKeyChecking=no -i cryptoKP.pem \
               build/libs/*.jar $USER@$HOST:/home/ec2-user/app/
           
-          scp -o StrictHostKeyChecking=no -i deploy_key.pem cryptogpt.tar $USER@$HOST:/home/ec2-user/app/
+          scp -o StrictHostKeyChecking=no -i cryptoKP.pem cryptogpt.tar $USER@$HOST:/home/ec2-user/app/
           
-          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $USER@$HOST "
+          ssh -o StrictHostKeyChecking=no -i cryptoKP.pem $USER@$HOST "
           cd /home/ec2-user/app &&
           sudo docker load < cryptogpt.tar &&
           sudo docker stop cryptogpt || true &&
