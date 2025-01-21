@@ -27,7 +27,9 @@ jobs:
 
       # Step 4: Build Docker image
       - name: Build Docker image
-        run: docker build -t cryptogpt:latest .
+        run: |
+          docker build -t cryptogpt:latest .
+          docker save cryptogpt:latest > cryptogpt.tar
 
       # Step 5: Deploy to EC2
       - name: Deploy to EC2
@@ -38,7 +40,19 @@ jobs:
         run: |
           echo "$PEM_FILE" > cryptoKP.pem
           chmod 400 cryptoKP.pem
+          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $USER@$HOST "sudo mkdir -p /home/ec2-user/app && sudo chown -R $USER:$USER /home/ec2-user/app"
+          
           scp -o StrictHostKeyChecking=no -i cryptoKP.pem \
               build/libs/*.jar $USER@$HOST:/home/ec2-user/app/
-          ssh -o StrictHostKeyChecking=no -i cryptoKP.pem \
-              $USER@$HOST "cd /home/ec2-user/app && sudo docker stop cryptogpt || true && sudo docker rm cryptogpt || true && sudo docker run -d -p 8080:8080 --name cryptogpt cryptogpt:latest"
+          
+          scp -o StrictHostKeyChecking=no -i deploy_key.pem cryptogpt.tar $USER@$HOST:/home/ec2-user/app/
+          
+          ssh -o StrictHostKeyChecking=no -i deploy_key.pem $USER@$HOST "
+          cd /home/ec2-user/app &&
+          sudo docker load < cryptogpt.tar &&
+          sudo docker stop cryptogpt || true &&
+          sudo docker rm cryptogpt || true &&
+          sudo docker run -d -p 8080:8080 --name cryptogpt cryptogpt:latest
+          "
+          
+          rm -f cryptoKP.pem
