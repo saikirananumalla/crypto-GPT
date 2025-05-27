@@ -45,4 +45,15 @@ Crypto GPT is an AI-enhanced web platform that helps users explore cryptocurrenc
 # Build & run the backend
 cd backend
 ./mvnw clean package
-java -jar target/crypto-gpt.jar
+java -jar target/crypto-gpt.jar```
+
+Make sure your .env or application.yml includes:
+- OpenAI API Key
+- Crypto price API
+- PostgreSQL connection URL
+
+Frontend:
+
+```cd frontend
+npm install
+npm run start```
